@@ -409,20 +409,24 @@ export const BiomarkerCanvas3D: React.FC<BiomarkerCanvas3DProps> = ({
 
     animate();
 
-    const handleResize = () => {
-      if (!container) return;
-      const w = container.clientWidth;
-      const h = container.clientHeight;
-      camera.aspect = w / h;
-      camera.updateProjectionMatrix();
-      renderer.setSize(w, h);
-    };
+    // ResizeObserver for rock-solid responsive canvas scaling
+    const resizeObserver = new ResizeObserver((entries) => {
+      for (const entry of entries) {
+        const w = entry.contentRect.width;
+        const h = entry.contentRect.height;
+        if (w > 0 && h > 0) {
+          camera.aspect = w / h;
+          camera.updateProjectionMatrix();
+          renderer.setSize(w, h);
+        }
+      }
+    });
 
-    window.addEventListener('resize', handleResize);
+    resizeObserver.observe(container);
 
     return () => {
       cancelAnimationFrame(animId);
-      window.removeEventListener('resize', handleResize);
+      resizeObserver.disconnect();
       renderer.domElement.removeEventListener('pointerdown', onPointerDown);
       renderer.domElement.removeEventListener('pointermove', onPointerMove);
       renderer.domElement.removeEventListener('pointerup', onPointerUp);
@@ -465,36 +469,37 @@ export const BiomarkerCanvas3D: React.FC<BiomarkerCanvas3DProps> = ({
   }
 
   return (
-    <div className="relative w-full h-[520px] rounded-2xl overflow-hidden border border-slate-300 shadow-md bg-[#070d1e] group">
+    <div className="relative w-full h-[340px] sm:h-[420px] md:h-[480px] lg:h-[520px] rounded-2xl overflow-hidden border border-slate-300 shadow-md bg-[#070d1e] group">
       <div ref={mountRef} className="w-full h-full cursor-grab active:cursor-grabbing" />
       
       {/* 3D Scene Status & Hovered Node Tooltip */}
-      <div className="absolute top-3 left-4 pointer-events-none flex items-center gap-2">
-        <span className="text-[11px] font-semibold text-cyan-300 bg-slate-900/90 px-3 py-1 rounded-full border border-cyan-500/30 flex items-center gap-1.5 shadow-xs backdrop-blur-sm">
+      <div className="absolute top-2.5 sm:top-3 left-2.5 sm:left-4 pointer-events-none flex flex-wrap items-center gap-1.5 sm:gap-2 max-w-[85%]">
+        <span className="text-[10px] sm:text-[11px] font-semibold text-cyan-300 bg-slate-900/90 px-2.5 sm:px-3 py-1 rounded-full border border-cyan-500/30 flex items-center gap-1.5 shadow-xs backdrop-blur-sm">
           <span className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse" />
-          WebGL 3D Multilayer Space
+          WebGL 3D Space
         </span>
         {hoveredNode && (
-          <span className="text-[11px] font-semibold text-white bg-slate-800/95 px-3 py-1 rounded-full border border-slate-600 shadow-md backdrop-blur-sm animate-in fade-in duration-100">
+          <span className="text-[10px] sm:text-[11px] font-semibold text-white bg-slate-800/95 px-2.5 sm:px-3 py-1 rounded-full border border-slate-600 shadow-md backdrop-blur-sm animate-in fade-in duration-100 truncate max-w-[200px]">
             {hoveredNode.name} ({hoveredNode.abbreviation})
           </span>
         )}
       </div>
 
-      {/* Instruction pill */}
-      <div className="absolute bottom-3 left-4 text-[11px] text-slate-300 bg-slate-900/85 px-3 py-1.5 rounded-xl border border-slate-700/80 pointer-events-none backdrop-blur-xs font-medium">
+      {/* Instruction pill (Hidden on mobile to prevent overlapping controls) */}
+      <div className="hidden md:block absolute bottom-3 left-4 text-[11px] text-slate-300 bg-slate-900/85 px-3 py-1.5 rounded-xl border border-slate-700/80 pointer-events-none backdrop-blur-xs font-medium">
         Drag to rotate • Scroll to zoom • Click node to inspect details
       </div>
 
       {/* On-screen Camera & Interaction Controls */}
-      <div className="absolute bottom-3 right-4 flex items-center gap-1.5 bg-slate-900/90 p-1.5 rounded-xl border border-slate-700/80 shadow-md backdrop-blur-xs z-20">
+      <div className="absolute bottom-2.5 sm:bottom-3 right-2.5 sm:right-4 flex items-center gap-1 sm:gap-1.5 bg-slate-900/90 p-1 sm:p-1.5 rounded-xl border border-slate-700/80 shadow-md backdrop-blur-xs z-20">
         <button
           type="button"
           onClick={() => setAutoRotate(!autoRotate)}
-          className={`p-1.5 rounded-lg text-xs font-semibold transition-colors flex items-center gap-1 cursor-pointer ${
+          className={`p-1.5 min-w-[32px] min-h-[32px] rounded-lg text-xs font-semibold transition-colors flex items-center justify-center cursor-pointer ${
             autoRotate ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/40' : 'text-slate-400 hover:text-white'
           }`}
           title={autoRotate ? 'Pause Auto-Rotation' : 'Resume Auto-Rotation'}
+          aria-label={autoRotate ? 'Pause rotation' : 'Resume rotation'}
         >
           {autoRotate ? <Pause className="w-3.5 h-3.5" /> : <Play className="w-3.5 h-3.5" />}
         </button>
@@ -502,8 +507,9 @@ export const BiomarkerCanvas3D: React.FC<BiomarkerCanvas3DProps> = ({
         <button
           type="button"
           onClick={() => handleZoom(1.0)}
-          className="p-1.5 rounded-lg text-slate-400 hover:text-white transition-colors cursor-pointer"
+          className="p-1.5 min-w-[32px] min-h-[32px] rounded-lg text-slate-400 hover:text-white transition-colors cursor-pointer flex items-center justify-center"
           title="Zoom In"
+          aria-label="Zoom in"
         >
           <ZoomIn className="w-3.5 h-3.5" />
         </button>
@@ -511,8 +517,9 @@ export const BiomarkerCanvas3D: React.FC<BiomarkerCanvas3DProps> = ({
         <button
           type="button"
           onClick={() => handleZoom(-1.0)}
-          className="p-1.5 rounded-lg text-slate-400 hover:text-white transition-colors cursor-pointer"
+          className="p-1.5 min-w-[32px] min-h-[32px] rounded-lg text-slate-400 hover:text-white transition-colors cursor-pointer flex items-center justify-center"
           title="Zoom Out"
+          aria-label="Zoom out"
         >
           <ZoomOut className="w-3.5 h-3.5" />
         </button>
@@ -520,8 +527,9 @@ export const BiomarkerCanvas3D: React.FC<BiomarkerCanvas3DProps> = ({
         <button
           type="button"
           onClick={handleResetCamera}
-          className="p-1.5 rounded-lg text-slate-400 hover:text-white transition-colors cursor-pointer"
+          className="p-1.5 min-w-[32px] min-h-[32px] rounded-lg text-slate-400 hover:text-white transition-colors cursor-pointer flex items-center justify-center"
           title="Reset Camera View"
+          aria-label="Reset camera"
         >
           <RotateCcw className="w-3.5 h-3.5" />
         </button>
@@ -532,7 +540,7 @@ export const BiomarkerCanvas3D: React.FC<BiomarkerCanvas3DProps> = ({
           <button
             type="button"
             onClick={onSwitchTo2D}
-            className="px-2.5 py-1 text-[11px] font-semibold text-cyan-300 hover:text-white bg-slate-800 hover:bg-slate-700 transition-colors flex items-center gap-1.5 rounded-lg border border-cyan-500/30 cursor-pointer shadow-2xs"
+            className="px-2 sm:px-2.5 py-1 min-h-[32px] text-[10px] sm:text-[11px] font-semibold text-cyan-300 hover:text-white bg-slate-800 hover:bg-slate-700 transition-colors flex items-center gap-1 sm:gap-1.5 rounded-lg border border-cyan-500/30 cursor-pointer shadow-2xs"
             title="Switch to 2D Projection"
           >
             <Layers className="w-3.5 h-3.5 text-cyan-400" />

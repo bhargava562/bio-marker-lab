@@ -98,15 +98,15 @@ export const DataQualityTool: React.FC<DataQualityToolProps> = ({ mode }) => {
       </div>
 
       {/* Filter Toolbar & Preview Toggle */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-        <div className="flex items-center gap-1.5 overflow-x-auto pb-1 max-w-full">
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+        <div className="flex items-center gap-1.5 overflow-x-auto pb-1.5 max-w-full scrollbar-none">
           <Filter className="w-3.5 h-3.5 text-slate-400 flex-shrink-0" />
           {filterOptions.map((f) => (
             <button
               key={f.id}
               type="button"
               onClick={() => setIssueFilter(f.id)}
-              className={`px-3 py-1 rounded-md text-xs font-medium transition-all ${
+              className={`px-3 py-1.5 min-h-[34px] rounded-md text-xs font-medium transition-all whitespace-nowrap shrink-0 cursor-pointer ${
                 issueFilter === f.id
                   ? 'bg-slate-900 text-white shadow-sm'
                   : 'bg-white text-slate-600 hover:text-slate-900 border border-slate-200'
@@ -120,7 +120,7 @@ export const DataQualityTool: React.FC<DataQualityToolProps> = ({ mode }) => {
         <button
           type="button"
           onClick={() => setPreviewCleaned(!previewCleaned)}
-          className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all border ${
+          className={`inline-flex items-center justify-center gap-1.5 px-3 py-2 min-h-[38px] rounded-lg text-xs font-semibold transition-all border shrink-0 cursor-pointer ${
             previewCleaned
               ? 'bg-emerald-50 text-emerald-800 border-emerald-300 shadow-sm'
               : 'bg-white text-slate-700 border-slate-300 hover:bg-slate-50'

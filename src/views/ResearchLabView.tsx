@@ -83,18 +83,18 @@ export const ResearchLabView: React.FC<ResearchLabViewProps> = ({ mode }) => {
             </div>
 
             {/* Quick Context Switcher / CTA */}
-            <div className="flex items-center gap-2 self-start md:self-auto">
+            <div className="flex flex-wrap items-center gap-2 self-start md:self-auto">
               <button
                 type="button"
                 onClick={() => navigate('/explore')}
-                className="text-xs font-medium px-3.5 py-2 rounded-lg bg-white border border-slate-200 hover:border-slate-300 text-slate-700 hover:text-slate-900 shadow-sm transition-all"
+                className="text-xs font-medium px-3.5 py-2 min-h-[38px] rounded-lg bg-white border border-slate-200 hover:border-slate-300 text-slate-700 hover:text-slate-900 shadow-sm transition-all cursor-pointer"
               >
                 ← Biomarker Explorer
               </button>
               <button
                 type="button"
                 onClick={() => navigate('/about')}
-                className="text-xs font-semibold px-3.5 py-2 rounded-lg bg-slate-900 text-white hover:bg-slate-800 shadow-sm transition-all flex items-center gap-1.5"
+                className="text-xs font-semibold px-3.5 py-2 min-h-[38px] rounded-lg bg-slate-900 text-white hover:bg-slate-800 shadow-sm transition-all flex items-center gap-1.5 cursor-pointer"
               >
                 <span>About the Science</span>
                 <ArrowRight className="w-3.5 h-3.5" />
@@ -103,7 +103,7 @@ export const ResearchLabView: React.FC<ResearchLabViewProps> = ({ mode }) => {
           </div>
 
           {/* Local Sub-Navigation Tabs */}
-          <div className="mt-6 grid grid-cols-2 lg:grid-cols-4 gap-2.5">
+          <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5">
             {tabs.map((tab) => {
               const isActive = currentTab === tab.id;
               return (

@@ -41,14 +41,14 @@ export const ExplainabilityTool: React.FC<ExplainabilityToolProps> = ({ mode: _m
       </div>
 
       {/* View Controls: Global vs Local View */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-        <div className="flex items-center bg-white p-1 rounded-lg border border-slate-200 shadow-sm">
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+        <div className="flex flex-col sm:flex-row w-full sm:w-auto bg-white p-1 rounded-lg border border-slate-200 shadow-sm gap-1">
           <button
             type="button"
             onClick={() => setViewType('local')}
-            className={`px-3 py-1.5 rounded-md text-xs font-medium transition-all ${
+            className={`px-3 py-2 sm:py-1.5 min-h-[36px] rounded-md text-xs font-medium transition-all text-center cursor-pointer ${
               viewType === 'local'
-                ? 'bg-slate-900 text-white shadow-sm'
+                ? 'bg-slate-900 text-white shadow-sm font-semibold'
                 : 'text-slate-600 hover:text-slate-900'
             }`}
           >
@@ -57,9 +57,9 @@ export const ExplainabilityTool: React.FC<ExplainabilityToolProps> = ({ mode: _m
           <button
             type="button"
             onClick={() => setViewType('global')}
-            className={`px-3 py-1.5 rounded-md text-xs font-medium transition-all ${
+            className={`px-3 py-2 sm:py-1.5 min-h-[36px] rounded-md text-xs font-medium transition-all text-center cursor-pointer ${
               viewType === 'global'
-                ? 'bg-slate-900 text-white shadow-sm'
+                ? 'bg-slate-900 text-white shadow-sm font-semibold'
                 : 'text-slate-600 hover:text-slate-900'
             }`}
           >
@@ -67,7 +67,7 @@ export const ExplainabilityTool: React.FC<ExplainabilityToolProps> = ({ mode: _m
           </button>
         </div>
 
-        <div className="text-xs text-slate-500 font-mono">
+        <div className="text-xs text-slate-500 font-mono text-right sm:text-left">
           {viewType === 'local' ? 'Base risk: 0.22 → Output risk: 0.74' : 'N = 1000 Population Aggregation'}
         </div>
       </div>

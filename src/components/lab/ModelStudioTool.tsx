@@ -149,30 +149,30 @@ export const ModelStudioTool: React.FC<ModelStudioToolProps> = ({ mode }) => {
                 key={m.id}
                 type="button"
                 onClick={() => setSelectedModelId(m.id)}
-                className={`w-full text-left p-3 rounded-xl transition-all border flex items-center justify-between ${
+                className={`w-full text-left p-3 min-h-[50px] rounded-xl transition-all border flex items-center justify-between cursor-pointer ${
                   isSelected
                     ? 'bg-slate-900 text-white border-slate-900 shadow-md'
                     : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50'
                 }`}
               >
-                <div>
+                <div className="min-w-0 pr-2">
                   <div className="text-xs font-bold">{m.name}</div>
-                  <div className={`text-[10px] truncate max-w-[170px] mt-0.5 ${
+                  <div className={`text-[10px] truncate max-w-[220px] sm:max-w-none mt-0.5 ${
                     isSelected ? 'text-slate-300' : 'text-slate-500'
                   }`}>
                     {m.howItWorks}
                   </div>
                 </div>
-                <ArrowRight className={`w-3.5 h-3.5 ${isSelected ? 'text-cyan-400' : 'text-slate-400'}`} />
+                <ArrowRight className={`w-3.5 h-3.5 shrink-0 ${isSelected ? 'text-cyan-400' : 'text-slate-400'}`} />
               </button>
             );
           })}
         </div>
 
         {/* Centre 47%: Animated Interactive Diagram */}
-        <div className="lg:col-span-5 bg-white border border-slate-200 rounded-xl p-5 shadow-sm min-h-[460px] flex flex-col justify-between">
+        <div className="lg:col-span-5 bg-white border border-slate-200 rounded-xl p-3.5 sm:p-5 shadow-sm min-h-0 sm:min-h-[460px] flex flex-col justify-between">
           <div className="flex items-center justify-between border-b border-slate-100 pb-2">
-            <span className="text-xs font-bold text-slate-900 uppercase font-mono tracking-wider">
+            <span className="text-xs font-bold text-slate-900 uppercase font-mono tracking-wider truncate pr-2">
               {currentModel.name} · Architecture
             </span>
             <span className="text-[10px] font-mono text-cyan-700 bg-cyan-50 px-2 py-0.5 rounded border border-cyan-100">

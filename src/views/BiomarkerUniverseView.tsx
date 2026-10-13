@@ -60,24 +60,24 @@ export const BiomarkerUniverseView: React.FC<BiomarkerUniverseViewProps> = ({ mo
         </div>
 
         {/* Search & Fallback Controls */}
-        <div className="flex items-center gap-2">
-          <div className="relative">
+        <div className="flex flex-wrap sm:flex-nowrap items-center gap-2 w-full sm:w-auto">
+          <div className="relative flex-1 sm:w-44 min-w-[130px]">
             <Search className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-1/2 -translate-y-1/2" />
             <input
               type="text"
               placeholder="Search biomarker..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="bg-white border border-slate-200 rounded-xl pl-8 pr-3 py-1.5 text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-cyan-500 w-44 font-sans shadow-2xs"
+              className="w-full bg-white border border-slate-200 rounded-xl pl-8 pr-3 py-1.5 text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-cyan-500 font-sans shadow-2xs"
             />
           </div>
 
           {/* 3D vs 2D Mode Switcher Segmented Control */}
-          <div className="flex items-center bg-slate-100 p-1 rounded-xl border border-slate-200 shadow-2xs">
+          <div className="flex items-center bg-slate-100 p-1 rounded-xl border border-slate-200 shadow-2xs shrink-0">
             <button
               type="button"
               onClick={() => setViewMode('3d')}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+              className={`flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
                 viewMode === '3d'
                   ? 'bg-white text-slate-900 shadow-xs'
                   : 'text-slate-600 hover:text-slate-900'
@@ -90,7 +90,7 @@ export const BiomarkerUniverseView: React.FC<BiomarkerUniverseViewProps> = ({ mo
             <button
               type="button"
               onClick={() => setViewMode('2d')}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+              className={`flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
                 viewMode === '2d'
                   ? 'bg-white text-slate-900 shadow-xs'
                   : 'text-slate-600 hover:text-slate-900'
@@ -109,8 +109,9 @@ export const BiomarkerUniverseView: React.FC<BiomarkerUniverseViewProps> = ({ mo
               setSearchQuery('');
               setSelectedBiomarker(BIOMARKERS[2]);
             }}
-            className="p-2 rounded-xl border border-slate-200 bg-white text-slate-500 hover:text-slate-900 hover:bg-slate-50 transition-colors shadow-2xs cursor-pointer"
+            className="p-2 min-w-[36px] min-h-[36px] rounded-xl border border-slate-200 bg-white text-slate-500 hover:text-slate-900 hover:bg-slate-50 transition-colors shadow-2xs cursor-pointer flex items-center justify-center shrink-0"
             title="Reset Filters"
+            aria-label="Reset filters"
           >
             <RotateCcw className="w-3.5 h-3.5" />
           </button>
@@ -119,7 +120,7 @@ export const BiomarkerUniverseView: React.FC<BiomarkerUniverseViewProps> = ({ mo
 
       {/* Category Filter Pills */}
       <div className="flex items-center gap-1.5 overflow-x-auto pb-2 mb-4 text-xs scrollbar-none">
-        <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 flex items-center gap-1 mr-1">
+        <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 flex items-center gap-1 mr-1 shrink-0">
           <Filter className="w-3 h-3 text-cyan-600" /> FILTERS:
         </span>
         {categories.map((cat) => (
@@ -127,7 +128,7 @@ export const BiomarkerUniverseView: React.FC<BiomarkerUniverseViewProps> = ({ mo
             key={cat.id}
             type="button"
             onClick={() => setActiveCategory(cat.id)}
-            className={`px-3.5 py-1 rounded-full whitespace-nowrap text-xs font-semibold transition-all cursor-pointer ${
+            className={`px-3 py-1.5 min-h-[36px] rounded-full whitespace-nowrap text-xs font-semibold transition-all cursor-pointer shrink-0 flex items-center ${
               activeCategory === cat.id
                 ? 'bg-slate-900 text-white shadow-xs'
                 : 'bg-white text-slate-600 hover:text-slate-900 border border-slate-200 hover:bg-slate-50'
@@ -161,14 +162,14 @@ export const BiomarkerUniverseView: React.FC<BiomarkerUniverseViewProps> = ({ mo
             />
           )}
 
-          <div className="mt-3 flex items-center justify-between text-xs text-slate-500 px-1 font-medium">
+          <div className="mt-3 flex flex-col sm:flex-row sm:items-center justify-between text-xs text-slate-500 px-1 gap-1 font-medium">
             <span>Visual Encoding: Multilayer glass-core node spheres with category color assignment</span>
             <span>Orbital planes indicate biological functional clusters</span>
           </div>
         </div>
 
         {/* Right-Side Information Panel */}
-        <div className="lg:col-span-4 h-[520px]">
+        <div className="lg:col-span-4 h-auto lg:h-[520px] max-h-[640px] lg:max-h-[520px]">
           <BiomarkerDetailPanel
             biomarker={selectedBiomarker}
             mode={mode}

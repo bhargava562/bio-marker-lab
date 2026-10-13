@@ -47,7 +47,7 @@ export const BiomarkerCanvas2D: React.FC<BiomarkerCanvas2DProps> = ({
     : biomarkers.filter((b) => b.category === activeCategory);
 
   return (
-    <div className="relative w-full h-[520px] bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden flex flex-col items-center justify-center p-4">
+    <div className="relative w-full h-[340px] sm:h-[420px] md:h-[480px] lg:h-[520px] bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden flex flex-col items-center justify-center p-2 sm:p-4">
       {/* Background Grid */}
       <svg className="absolute inset-0 w-full h-full pointer-events-none opacity-40">
         <defs>
@@ -61,8 +61,8 @@ export const BiomarkerCanvas2D: React.FC<BiomarkerCanvas2DProps> = ({
       </svg>
 
       {/* Top Left Projection Badge */}
-      <div className="absolute top-3 left-4 pointer-events-none flex items-center gap-2 z-20">
-        <span className="text-[11px] font-semibold text-slate-700 bg-white/95 px-3 py-1 rounded-full border border-slate-200 shadow-2xs flex items-center gap-1.5 backdrop-blur-sm">
+      <div className="absolute top-2.5 sm:top-3 left-2.5 sm:left-4 pointer-events-none flex items-center gap-2 z-20">
+        <span className="text-[10px] sm:text-[11px] font-semibold text-slate-700 bg-white/95 px-2.5 sm:px-3 py-1 rounded-full border border-slate-200 shadow-2xs flex items-center gap-1.5 backdrop-blur-sm">
           <span className="w-2 h-2 rounded-full bg-cyan-600" />
           2D Scientific Projection
         </span>
@@ -155,19 +155,19 @@ export const BiomarkerCanvas2D: React.FC<BiomarkerCanvas2DProps> = ({
       </svg>
 
       {/* Bottom Controls Bar: Hint + Switch to 3D Button */}
-      <div className="absolute bottom-3 right-4 flex items-center gap-2 z-20">
-        <div className="text-[11px] font-medium text-slate-500 bg-white/95 px-3 py-1.5 rounded-xl border border-slate-200 shadow-2xs">
+      <div className="absolute bottom-2.5 sm:bottom-3 right-2.5 sm:right-4 flex items-center gap-2 z-20">
+        <div className="hidden sm:block text-[11px] font-medium text-slate-500 bg-white/95 px-3 py-1.5 rounded-xl border border-slate-200 shadow-2xs">
           Click node to inspect • Orthographic projection
         </div>
         {onSwitchTo3D && (
           <button
             type="button"
             onClick={onSwitchTo3D}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-900 text-white hover:bg-slate-800 text-xs font-semibold shadow-xs transition-all hover:shadow-sm active:scale-95 cursor-pointer"
+            className="flex items-center gap-1.5 px-3 py-1.5 min-h-[36px] rounded-xl bg-slate-900 text-white hover:bg-slate-800 text-xs font-semibold shadow-xs transition-all hover:shadow-sm active:scale-95 cursor-pointer"
             title="Switch back to 3D Universe"
           >
             <Box className="w-3.5 h-3.5 text-cyan-400" />
-            <span>Switch to 3D Universe</span>
+            <span>Switch to 3D Space</span>
           </button>
         )}
       </div>

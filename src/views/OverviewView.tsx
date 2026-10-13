@@ -146,21 +146,24 @@ export const OverviewView: React.FC<OverviewViewProps> = ({ mode: _mode }) => {
 
     animate();
 
-    const handleResize = () => {
-      if (!container) return;
-      const w = container.clientWidth;
-      const h = container.clientHeight;
-      camera.aspect = w / h;
-      camera.updateProjectionMatrix();
-      renderer.setSize(w, h);
-    };
+    const resizeObserver = new ResizeObserver((entries) => {
+      for (const entry of entries) {
+        const w = entry.contentRect.width;
+        const h = entry.contentRect.height;
+        if (w > 0 && h > 0) {
+          camera.aspect = w / h;
+          camera.updateProjectionMatrix();
+          renderer.setSize(w, h);
+        }
+      }
+    });
 
-    window.addEventListener('resize', handleResize);
+    resizeObserver.observe(container);
 
     return () => {
       cancelAnimationFrame(animId);
       window.removeEventListener('mousemove', onMouseMove);
-      window.removeEventListener('resize', handleResize);
+      resizeObserver.disconnect();
       if (renderer.domElement && renderer.domElement.parentNode === container) {
         container.removeChild(renderer.domElement);
       }
@@ -169,22 +172,22 @@ export const OverviewView: React.FC<OverviewViewProps> = ({ mode: _mode }) => {
   }, []);
 
   return (
-    <div className="relative min-h-[calc(100vh-4rem)] flex flex-col justify-between px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto overflow-hidden">
+    <div className="relative min-h-[calc(100vh-4rem)] flex flex-col justify-between px-3 sm:px-6 lg:px-8 max-w-7xl mx-auto overflow-hidden">
       
       {/* Hero Section: Left 45% Text / Right 55% Constellation */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center pt-8 pb-12 my-auto">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center pt-6 sm:pt-8 pb-10 sm:pb-12 my-auto">
         
         {/* Left Column */}
         <div className="lg:col-span-5 flex flex-col items-start z-10">
           
           {/* Eyebrow Pill */}
-          <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-800 text-[11px] font-semibold tracking-wider uppercase mb-6 shadow-2xs">
+          <div className="inline-flex items-center gap-2 px-3 sm:px-3.5 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-800 text-[10px] sm:text-[11px] font-semibold tracking-wider uppercase mb-4 sm:mb-6 shadow-2xs">
             <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
             <span>Clinical Biomarker Discovery</span>
           </div>
 
           {/* Master Headline */}
-          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-slate-900 tracking-tight leading-[1.08] mb-5 font-display">
+          <h1 className="text-3xl sm:text-5xl lg:text-6xl font-extrabold text-slate-900 tracking-tight leading-[1.1] sm:leading-[1.08] mb-4 sm:mb-5 font-display">
             The clues are there.<br />
             <span className="bg-gradient-to-r from-cyan-600 via-sky-600 to-indigo-600 bg-clip-text text-transparent">
               The challenge is connecting them.
@@ -192,16 +195,16 @@ export const OverviewView: React.FC<OverviewViewProps> = ({ mode: _mode }) => {
           </h1>
 
           {/* Exact Supporting Content */}
-          <p className="text-base sm:text-lg text-slate-600 leading-relaxed mb-8 font-normal">
+          <p className="text-sm sm:text-base lg:text-lg text-slate-600 leading-relaxed mb-6 sm:mb-8 font-normal">
             Explore the biological measurements researchers study to understand diabetes-related patterns—and how those signals must be tested before they can support clinical decisions.
           </p>
 
           {/* Actions */}
-          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3.5 w-full sm:w-auto mb-8">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full sm:w-auto mb-6 sm:mb-8">
             <button
               type="button"
               onClick={() => navigate('/explore')}
-              className="inline-flex items-center justify-center gap-2 bg-slate-900 hover:bg-slate-800 text-white font-bold px-7 py-3.5 rounded-full text-sm transition-all shadow-md hover:scale-105"
+              className="inline-flex items-center justify-center gap-2 bg-slate-900 hover:bg-slate-800 text-white font-bold px-6 sm:px-7 py-3 sm:py-3.5 min-h-[44px] rounded-full text-xs sm:text-sm transition-all shadow-md hover:scale-105 cursor-pointer"
             >
               <span>Start exploring</span>
               <ArrowRight className="w-4 h-4 text-cyan-400" />
@@ -210,7 +213,7 @@ export const OverviewView: React.FC<OverviewViewProps> = ({ mode: _mode }) => {
             <button
               type="button"
               onClick={() => setShowHowItWorks(true)}
-              className="inline-flex items-center justify-center gap-2 bg-white hover:bg-slate-50 text-slate-700 border border-slate-300 font-medium px-6 py-3.5 rounded-full text-sm transition-all shadow-2xs hover:border-slate-400"
+              className="inline-flex items-center justify-center gap-2 bg-white hover:bg-slate-50 text-slate-700 border border-slate-300 font-medium px-5 sm:px-6 py-3 sm:py-3.5 min-h-[44px] rounded-full text-xs sm:text-sm transition-all shadow-2xs hover:border-slate-400 cursor-pointer"
             >
               <HelpCircle className="w-4 h-4 text-cyan-600" />
               <span>How the research works</span>
@@ -225,10 +228,10 @@ export const OverviewView: React.FC<OverviewViewProps> = ({ mode: _mode }) => {
         </div>
 
         {/* Right 55% Luminous Cluster Constellation */}
-        <div className="lg:col-span-7 h-[420px] sm:h-[480px] lg:h-[560px] relative w-full flex items-center justify-center bg-white/60 rounded-3xl border border-slate-200/80 shadow-xs backdrop-blur-xs">
+        <div className="lg:col-span-7 h-[280px] sm:h-[380px] lg:h-[540px] relative w-full flex items-center justify-center bg-white/60 rounded-3xl border border-slate-200/80 shadow-xs backdrop-blur-xs">
           <div ref={canvasRef} className="w-full h-full" />
           
-          <div className="absolute top-4 right-4 text-[11px] font-semibold tracking-wide text-cyan-800 bg-white/90 px-3 py-1 rounded-full border border-cyan-200 pointer-events-none shadow-xs backdrop-blur-sm">
+          <div className="absolute top-3 sm:top-4 right-3 sm:right-4 text-[10px] sm:text-[11px] font-semibold tracking-wide text-cyan-800 bg-white/90 px-2.5 sm:px-3 py-1 rounded-full border border-cyan-200 pointer-events-none shadow-xs backdrop-blur-sm">
             Interactive Signal Universe · 5 Biomarker Domains
           </div>
         </div>
@@ -298,12 +301,13 @@ export const OverviewView: React.FC<OverviewViewProps> = ({ mode: _mode }) => {
 
       {/* How the Research Works Modal */}
       {showHowItWorks && (
-        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white border border-slate-200 rounded-2xl max-w-xl w-full p-6 relative text-slate-800 shadow-2xl animate-in fade-in zoom-in-95 duration-150">
+        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4">
+          <div className="bg-white border border-slate-200 rounded-2xl max-w-xl w-full p-5 sm:p-6 relative text-slate-800 shadow-2xl animate-in fade-in zoom-in-95 duration-150 max-h-[90vh] overflow-y-auto">
             <button
               type="button"
               onClick={() => setShowHowItWorks(false)}
-              className="absolute top-4 right-4 text-slate-400 hover:text-slate-800 p-1.5 rounded-lg transition-colors hover:bg-slate-100"
+              className="absolute top-4 right-4 text-slate-400 hover:text-slate-800 p-1.5 rounded-lg transition-colors hover:bg-slate-100 min-w-[36px] min-h-[36px] flex items-center justify-center cursor-pointer"
+              aria-label="Close modal"
             >
               <X className="w-5 h-5" />
             </button>

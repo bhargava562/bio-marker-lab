@@ -10,12 +10,12 @@ export const HelpModal: React.FC<HelpModalProps> = ({ isOpen, onClose }) => {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4">
-      <div className="bg-white border border-slate-200 rounded-2xl max-w-lg w-full p-6 relative text-slate-800 shadow-2xl animate-in fade-in zoom-in-95 duration-150">
+    <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4">
+      <div className="bg-white border border-slate-200 rounded-2xl max-w-lg w-full p-4 sm:p-6 relative text-slate-800 shadow-2xl animate-in fade-in zoom-in-95 duration-150 max-h-[90vh] overflow-y-auto">
         <button
           type="button"
           onClick={onClose}
-          className="absolute top-4 right-4 text-slate-400 hover:text-slate-800 p-1.5 rounded-lg transition-colors hover:bg-slate-100"
+          className="absolute top-3 sm:top-4 right-3 sm:right-4 text-slate-400 hover:text-slate-800 p-1.5 rounded-lg transition-colors hover:bg-slate-100 min-w-[36px] min-h-[36px] flex items-center justify-center cursor-pointer"
           aria-label="Close"
         >
           <X className="w-5 h-5" />
