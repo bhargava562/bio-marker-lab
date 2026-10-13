@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { Navbar } from './components/layout/Navbar';
-import { DisclosureBanner } from './components/ui/DisclosureBanner';
 import { Footer } from './components/layout/Footer';
 import { HelpModal } from './components/ui/HelpModal';
 import { OverviewView } from './views/OverviewView';
@@ -16,13 +15,12 @@ function AppContent() {
 
   return (
     <div className="min-h-screen flex flex-col bg-[#f8fafc] text-slate-800 bg-grid-light selection:bg-cyan-500/20">
-      {/* Product Header & Research Banner */}
+      {/* Product Header */}
       <Navbar 
         mode={mode} 
         onToggleMode={(newMode) => setMode(newMode)} 
         onOpenHelp={() => setIsHelpOpen(true)}
       />
-      <DisclosureBanner mode={mode} />
 
       {/* Product Experiences */}
       <main className="flex-1 w-full">
