@@ -1,14 +1,15 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { 
   Database, 
   AlertTriangle, 
   CheckCircle, 
   ArrowRight, 
   Filter, 
-  ShieldCheck, 
   Table, 
   FileCode, 
-  CopyCheck 
+  Info, 
+  Eye 
 } from 'lucide-react';
 import { SYNTHETIC_PATIENT_RECORDS, DATA_DOMAINS_TABLE } from '../data/dataQuality';
 import type { SyntheticPatientRecord, ExplorationMode } from '../types';
@@ -18,17 +19,19 @@ interface BuildEvidenceViewProps {
 }
 
 export const BuildEvidenceView: React.FC<BuildEvidenceViewProps> = ({ mode }) => {
+  const navigate = useNavigate();
   const [selectedRecord, setSelectedRecord] = useState<SyntheticPatientRecord>(SYNTHETIC_PATIENT_RECORDS[1]); // Default to rec-002 with unit mismatch
   const [issueFilter, setIssueFilter] = useState<string>('all');
-  const [viewCleanedVersion, setViewCleanedVersion] = useState<boolean>(false);
+  const [previewCleaned, setPreviewCleaned] = useState<boolean>(false);
+  const [selectedWorkflowStep, setSelectedWorkflowStep] = useState<number>(1);
 
   const filterOptions = [
-    { id: 'all', label: 'All Records (8 Specimens)' },
-    { id: 'flagged', label: 'Flagged Anomalies (5)' },
-    { id: 'implausible_unit', label: 'Unit Mismatch (mmol/L)' },
-    { id: 'biologically_implausible', label: 'Biologically Implausible (BMI)' },
-    { id: 'missing', label: 'Missing Core Analyte' },
-    { id: 'duplicate', label: 'Duplicate Entry' },
+    { id: 'all', label: 'All Records' },
+    { id: 'flagged', label: 'Flagged Issues' },
+    { id: 'implausible_unit', label: 'Unit Review (mmol/L)' },
+    { id: 'biologically_implausible', label: 'Implausible (BMI)' },
+    { id: 'missing', label: 'Missing Values' },
+    { id: 'duplicate', label: 'Duplicates' },
   ];
 
   const filteredRecords = SYNTHETIC_PATIENT_RECORDS.filter((r) => {
@@ -37,304 +40,414 @@ export const BuildEvidenceView: React.FC<BuildEvidenceViewProps> = ({ mode }) =>
     return r.flaggedIssues.some((issue) => issue.issueType === issueFilter);
   });
 
-  // Illustrative cleaned record values for specimen comparison
-  const getCleanedRecordValue = (
-    record: SyntheticPatientRecord,
-    field: 'fpg' | 'bmi' | 'hba1c' | 'fastingInsulin' | 'sex'
-  ): string | number | null => {
-    if (!viewCleanedVersion) return record[field];
+  const activeIssue = selectedRecord.flaggedIssues[0] || null;
 
-    if (record.id === 'rec-002' && field === 'fpg') return '140.5 mg/dL';
-    if (record.id === 'rec-003' && field === 'bmi') return '24.2 kg/m²';
-    if (record.id === 'rec-004' && field === 'hba1c') return '[MAR Imputed]';
-    if (record.id === 'rec-005' && field === 'sex') return 'M';
-    if (record.id === 'rec-007' && field === 'fastingInsulin') return '[Stratified Branch]';
-
-    return record[field];
+  const getCleanedValue = (rec: SyntheticPatientRecord, field: 'fpg' | 'bmi' | 'hba1c' | 'sex') => {
+    if (!previewCleaned) return rec[field];
+    if (rec.id === 'rec-002' && field === 'fpg') return '140.5 mg/dL';
+    if (rec.id === 'rec-003' && field === 'bmi') return '24.2 kg/m²';
+    if (rec.id === 'rec-004' && field === 'hba1c') return '[Imputed in Fold]';
+    if (rec.id === 'rec-005' && field === 'sex') return 'M';
+    return rec[field];
   };
 
-  return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-      {/* Header */}
-      <div className="mb-6 pb-4 border-b border-slate-800">
-        <div className="flex items-center gap-2 mb-1">
-          <span className="text-[11px] font-mono uppercase tracking-wider text-cyan-400 bg-cyan-950/60 px-2 py-0.5 rounded border border-cyan-500/30">
-            Screen 03 • Data Governance & Pre-Processing
-          </span>
-          <span className="text-xs text-slate-400">Section 10 & 11 of BRAINS Project Submission</span>
-        </div>
-        <h1 className="text-2xl sm:text-3xl font-bold text-white tracking-tight">Build the Evidence</h1>
-        <p className="text-xs sm:text-sm text-slate-300 mt-1 max-w-2xl">
-          High precision begins before machine learning. Explore how laboratory unit harmonization, anomaly isolation, and strict leakage prevention ensure data readiness.
-        </p>
-      </div>
+  const workflowSteps = [
+    {
+      step: 1,
+      title: 'Raw Data',
+      desc: 'Heterogeneous clinical feeds, variable laboratory machines, inconsistent units (mg/dL vs mmol/L).',
+      protocol: 'Lock initial extraction timestamp; assign unique anonymized study identifiers.',
+    },
+    {
+      step: 2,
+      title: 'Quality Checks',
+      desc: 'Systematic screening for biologically impossible ranges, unit mismatches, and duplicated blood samples.',
+      protocol: 'Document all anomalies in data dictionary prior to statistical modeling.',
+    },
+    {
+      step: 3,
+      title: 'Preprocessing',
+      desc: 'Standardize units, winsorize entry typos, and estimate imputation strictly within training folds.',
+      protocol: 'Prevent target leakage by freezing test holdouts during preprocessing.',
+    },
+    {
+      step: 4,
+      title: 'Model-Ready Data',
+      desc: 'Harmonized, scaled tabular matrix verified for cross-validation and feature selection.',
+      protocol: 'Verified analytic cohort ready for comparative candidate model training.',
+    },
+  ];
 
-      {/* 4-Step Clinical Data Preprocessing Pipeline */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-3 mb-8">
-        {[
-          { step: '01', title: 'Raw Ingestion', desc: 'Heterogeneous hospital EHR feeds, variable laboratory machines & units' },
-          { step: '02', title: 'Quality Audit', desc: 'Plausibility screening, duplicate pruning, missingness pattern detection' },
-          { step: '03', title: 'Pre-Processing', desc: 'Harmonization, scaling, encoding within cross-validation training folds' },
-          { step: '04', title: 'Model-Ready Matrix', desc: 'Feature matrix protected from target leakage and measurement bias' },
-        ].map((item, idx) => (
-          <div key={item.step} className="sci-card p-3 relative flex flex-col justify-between">
-            <div>
-              <div className="flex items-center justify-between text-xs font-mono text-cyan-400 mb-1">
-                <span>Phase {item.step}</span>
-                {idx < 3 && <ArrowRight className="w-3.5 h-3.5 text-slate-600 hidden md:block" />}
+  const matrixColumns = ['FPG', 'PPG', 'HbA1c', 'Insulin', 'TG', 'HDL', 'Cr', 'eGFR', 'UACR'];
+
+  return (
+    <div className="bg-[#f8fafc] text-slate-800 min-h-screen py-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        
+        {/* Header Region */}
+        <div className="mb-6 pb-4 border-b border-slate-200">
+          <div className="text-[11px] font-mono uppercase tracking-wider text-cyan-700 font-semibold mb-0.5">
+            Stage 03 · 2D Investigate · Research Workbench
+          </div>
+          <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
+            Build the Evidence
+          </h1>
+          <p className="text-xs sm:text-sm text-slate-600 mt-1 max-w-2xl">
+            Reliable machine learning begins with reliable data. Inspect the synthetic cohort, identify laboratory anomalies, and preview protocol-driven preprocessing.
+          </p>
+          <div className="mt-2 text-[11px] font-mono text-slate-500 flex items-center gap-2">
+            <span className="w-2 h-2 rounded-full bg-cyan-600" />
+            <span>Deterministic synthetic specimen cohort · N = 8 records for methodological demonstration</span>
+          </div>
+        </div>
+
+        {/* Filter Toolbar & Preview Toggle */}
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-4">
+          <div className="flex items-center gap-1.5 overflow-x-auto pb-1 max-w-full">
+            <Filter className="w-3.5 h-3.5 text-slate-400 flex-shrink-0" />
+            {filterOptions.map((f) => (
+              <button
+                key={f.id}
+                type="button"
+                onClick={() => setIssueFilter(f.id)}
+                className={`px-3 py-1 rounded-md text-xs font-medium transition-all ${
+                  issueFilter === f.id
+                    ? 'bg-slate-900 text-white shadow-sm'
+                    : 'bg-white text-slate-600 hover:text-slate-900 border border-slate-200'
+                }`}
+              >
+                {f.label}
+              </button>
+            ))}
+          </div>
+
+          <button
+            type="button"
+            onClick={() => setPreviewCleaned(!previewCleaned)}
+            className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all border ${
+              previewCleaned
+                ? 'bg-emerald-50 text-emerald-800 border-emerald-300 shadow-sm'
+                : 'bg-white text-slate-700 border-slate-300 hover:bg-slate-50'
+            }`}
+          >
+            <Eye className="w-3.5 h-3.5 text-cyan-600" />
+            <span>{previewCleaned ? 'Showing: Cleaned State' : 'Preview Illustrative Cleaning'}</span>
+          </button>
+        </div>
+
+        {/* Main Composition: Left 68% Table / Right 32% Inspector */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start mb-8">
+          
+          {/* Left 68%: Record Table */}
+          <div className="lg:col-span-8 bg-white border border-slate-200 rounded-xl p-4 shadow-sm overflow-hidden">
+            <div className="flex items-center justify-between mb-3 pb-2 border-b border-slate-100">
+              <div className="flex items-center gap-2">
+                <Table className="w-4 h-4 text-cyan-600" />
+                <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wider font-mono">
+                  Specimen Records Table
+                </h3>
               </div>
-              <div className="text-xs font-semibold text-white mb-0.5">{item.title}</div>
-              <div className="text-[11px] text-slate-400 leading-tight">{item.desc}</div>
+              <span className="text-[11px] font-mono text-slate-500">
+                {filteredRecords.length} of 8 rows shown
+              </span>
+            </div>
+
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-xs border-collapse font-mono">
+                <thead>
+                  <tr className="border-b border-slate-200 text-slate-500 text-[11px] bg-slate-50">
+                    <th className="py-2.5 px-3">Study ID</th>
+                    <th className="py-2.5 px-2">Age/Sex</th>
+                    <th className="py-2.5 px-2">BMI (kg/m²)</th>
+                    <th className="py-2.5 px-2">FPG</th>
+                    <th className="py-2.5 px-2">HbA1c</th>
+                    <th className="py-2.5 px-2">Insulin</th>
+                    <th className="py-2.5 px-3">Data Status</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100 text-slate-700">
+                  {filteredRecords.map((rec) => {
+                    const isSelected = selectedRecord.id === rec.id;
+                    const hasIssues = rec.flaggedIssues.length > 0;
+                    const fpg = getCleanedValue(rec, 'fpg');
+                    const bmi = getCleanedValue(rec, 'bmi');
+                    const hba1c = getCleanedValue(rec, 'hba1c');
+
+                    return (
+                      <tr
+                        key={rec.id}
+                        onClick={() => setSelectedRecord(rec)}
+                        className={`cursor-pointer transition-colors ${
+                          isSelected
+                            ? 'bg-cyan-50/80 text-cyan-950 font-semibold'
+                            : 'hover:bg-slate-50'
+                        }`}
+                      >
+                        <td className="py-2.5 px-3 font-semibold text-slate-900">
+                          {rec.patientStudyId}
+                          {rec.isDuplicate && !previewCleaned && (
+                            <span className="ml-1 text-[9px] text-red-600 uppercase font-bold">[DUP]</span>
+                          )}
+                        </td>
+                        <td className="py-2.5 px-2">
+                          {rec.age} / {getCleanedValue(rec, 'sex')}
+                        </td>
+                        <td className="py-2.5 px-2">
+                          <span className={rec.bmi && rec.bmi > 80 && !previewCleaned ? 'text-red-600 font-bold underline' : ''}>
+                            {bmi}
+                          </span>
+                        </td>
+                        <td className="py-2.5 px-2">
+                          <span className={rec.fpg && rec.fpg < 20 && !previewCleaned ? 'text-amber-700 font-bold underline' : ''}>
+                            {fpg}
+                          </span>
+                        </td>
+                        <td className="py-2.5 px-2">
+                          <span className={rec.hba1c === null && !previewCleaned ? 'text-red-600 italic font-bold' : ''}>
+                            {hba1c !== null ? `${hba1c}%` : 'MISSING'}
+                          </span>
+                        </td>
+                        <td className="py-2.5 px-2 text-slate-500">
+                          {rec.fastingInsulin ? `${rec.fastingInsulin} μIU` : 'null'}
+                        </td>
+                        <td className="py-2.5 px-3">
+                          {hasIssues ? (
+                            <span className={`text-[10px] px-2 py-0.5 rounded font-mono font-medium ${
+                              previewCleaned
+                                ? 'bg-emerald-100 text-emerald-800 border border-emerald-200'
+                                : 'bg-amber-100 text-amber-800 border border-amber-200'
+                            }`}>
+                              {previewCleaned ? 'Harmonized' : rec.flaggedIssues[0].issueType.replace('_', ' ')}
+                            </span>
+                          ) : (
+                            <span className="text-[10px] px-2 py-0.5 rounded bg-slate-100 text-slate-700 font-mono">
+                              Verified
+                            </span>
+                          )}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
             </div>
           </div>
-        ))}
-      </div>
 
-      {/* Controls Bar: Issue filter and Raw vs Cleaned Toggle */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-4">
-        {/* Issue Filters */}
-        <div className="flex items-center gap-1.5 overflow-x-auto pb-1 max-w-full">
-          <Filter className="w-3.5 h-3.5 text-slate-500 flex-shrink-0" />
-          {filterOptions.map((f) => (
-            <button
-              key={f.id}
-              type="button"
-              onClick={() => setIssueFilter(f.id)}
-              className={`px-2.5 py-1 rounded-md whitespace-nowrap text-xs font-medium transition-all ${
-                issueFilter === f.id
-                  ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/40'
-                  : 'bg-slate-900/60 text-slate-400 hover:text-slate-200 border border-slate-800'
-              }`}
-            >
-              {f.label}
-            </button>
-          ))}
-        </div>
-
-        {/* View Mode Toggle: Raw vs Cleaned */}
-        <div className="flex items-center bg-[#0b1326] p-1 rounded-lg border border-slate-700/60">
-          <button
-            type="button"
-            onClick={() => setViewCleanedVersion(false)}
-            className={`px-3 py-1 rounded text-xs font-medium transition-colors ${
-              !viewCleanedVersion
-                ? 'bg-amber-500/20 text-amber-300 border border-amber-500/40'
-                : 'text-slate-400 hover:text-slate-200'
-            }`}
-          >
-            Raw Ingested Records
-          </button>
-          <button
-            type="button"
-            onClick={() => setViewCleanedVersion(true)}
-            className={`px-3 py-1 rounded text-xs font-medium transition-colors ${
-              viewCleanedVersion
-                ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40'
-                : 'text-slate-400 hover:text-slate-200'
-            }`}
-          >
-            Proposed Cleaned State
-          </button>
-        </div>
-      </div>
-
-      {/* Main Specimen Table and Focused Quality Inspector */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-        {/* Specimen Table */}
-        <div className="lg:col-span-8 sci-panel p-4 overflow-hidden">
-          <div className="flex items-center justify-between mb-3 pb-2 border-b border-slate-800">
-            <div className="flex items-center gap-2">
-              <Table className="w-4 h-4 text-cyan-400" />
-              <h3 className="text-sm font-semibold text-white">Synthetic Cohort Records</h3>
+          {/* Right 32%: Selected Record & Quality Inspector */}
+          <div className="lg:col-span-4 bg-white border border-slate-200 rounded-xl p-5 shadow-sm space-y-4">
+            <div className="border-b border-slate-100 pb-3">
+              <div className="text-[10px] font-mono text-slate-400 uppercase tracking-wider">
+                Specimen Quality Inspector
+              </div>
+              <h3 className="text-base font-bold text-slate-900 mt-0.5">
+                {selectedRecord.patientStudyId}
+              </h3>
+              <p className="text-xs text-slate-500">
+                Assigned Outcome: <strong className="text-slate-800">{selectedRecord.outcomeLabel}</strong>
+              </p>
             </div>
-            <span className="text-[11px] font-mono text-slate-400">Click a record to audit quality metadata</span>
+
+            {activeIssue ? (
+              <div className="space-y-3 text-xs">
+                
+                {/* Field: Issue */}
+                <div className="bg-amber-50/80 p-3 rounded-lg border border-amber-200">
+                  <div className="text-[10px] font-mono text-amber-800 font-bold uppercase mb-1 flex items-center gap-1">
+                    <AlertTriangle className="w-3.5 h-3.5 text-amber-600" />
+                    Issue: {activeIssue.field.toUpperCase()} ({activeIssue.issueType.replace('_', ' ')})
+                  </div>
+                  <p className="text-slate-700 leading-relaxed text-[11px]">
+                    {activeIssue.description}
+                  </p>
+                </div>
+
+                {/* Field: Why it matters */}
+                <div className="bg-slate-50 p-3 rounded-lg border border-slate-200">
+                  <div className="text-[10px] font-mono text-slate-500 font-bold uppercase mb-1 flex items-center gap-1">
+                    <Info className="w-3.5 h-3.5 text-cyan-600" /> Why it matters
+                  </div>
+                  <p className="text-slate-700 leading-relaxed text-[11px]">
+                    {activeIssue.impactExplanation}
+                  </p>
+                </div>
+
+                {/* Field: Possible research response */}
+                <div className="bg-cyan-50/70 p-3 rounded-lg border border-cyan-200">
+                  <div className="text-[10px] font-mono text-cyan-800 font-bold uppercase mb-1 flex items-center gap-1">
+                    <FileCode className="w-3.5 h-3.5 text-cyan-700" /> Possible research response
+                  </div>
+                  <p className="text-slate-800 leading-relaxed text-[11px]">
+                    {activeIssue.proposedCleanAction}
+                  </p>
+                </div>
+
+                {/* Action: Interactive Preview */}
+                <div className="pt-2">
+                  <button
+                    type="button"
+                    onClick={() => setPreviewCleaned(!previewCleaned)}
+                    className="w-full bg-slate-900 hover:bg-slate-800 text-white font-medium py-2 px-3 rounded-lg text-xs transition-colors text-center"
+                  >
+                    {previewCleaned ? 'Revert to Raw Value' : 'Preview Illustrative Treatment'}
+                  </button>
+                </div>
+
+              </div>
+            ) : (
+              <div className="py-8 text-center">
+                <CheckCircle className="w-8 h-8 text-emerald-500 mx-auto mb-2" />
+                <h4 className="text-xs font-bold text-slate-900">Clean Quality Specimen</h4>
+                <p className="text-[11px] text-slate-500 mt-1 max-w-xs mx-auto">
+                  Measurements fall within standard physiological ranges with complete documentation.
+                </p>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Supporting Visualisation: Compact Missingness Matrix */}
+        <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm mb-8">
+          <div className="flex items-center justify-between mb-3 border-b border-slate-100 pb-2">
+            <div>
+              <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wider font-mono">
+                Analyte Missingness Matrix (Rows = Specimens · Cols = Measurements)
+              </h3>
+              <p className="text-[11px] text-slate-500 mt-0.5">
+                Dark blue cell indicates measurement present; hatched orange cell indicates missing value requiring imputation strategy.
+              </p>
+            </div>
+            <div className="flex items-center gap-3 text-[10px] font-mono">
+              <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 bg-cyan-800 rounded-sm" /> Present</span>
+              <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 bg-amber-400 rounded-sm" /> Missing</span>
+            </div>
           </div>
 
           <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs border-collapse font-mono">
-              <thead>
-                <tr className="border-b border-slate-800 text-slate-400 text-[11px]">
-                  <th className="py-2 px-2.5">Study ID</th>
-                  <th className="py-2 px-2.5">Age/Sex</th>
-                  <th className="py-2 px-2.5">BMI</th>
-                  <th className="py-2 px-2.5">FPG</th>
-                  <th className="py-2 px-2.5">HbA1c</th>
-                  <th className="py-2 px-2.5">Insulin</th>
-                  <th className="py-2 px-2.5">eGFR</th>
-                  <th className="py-2 px-2.5">Audit Status</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-800/60 text-slate-300">
-                {filteredRecords.map((rec) => {
-                  const isSelected = selectedRecord.id === rec.id;
-                  const hasIssues = rec.flaggedIssues.length > 0;
-                  const fpgDisplay = getCleanedRecordValue(rec, 'fpg');
-                  const bmiDisplay = getCleanedRecordValue(rec, 'bmi');
-                  const hba1cDisplay = getCleanedRecordValue(rec, 'hba1c');
-                  const insulinDisplay = getCleanedRecordValue(rec, 'fastingInsulin');
+            <div className="min-w-[600px]">
+              {/* Header row */}
+              <div className="grid grid-cols-10 gap-1 text-[10px] font-mono text-slate-500 text-center mb-1">
+                <div className="text-left font-semibold">Specimen</div>
+                {matrixColumns.map((col) => (
+                  <div key={col} className="bg-slate-100 py-1 rounded">{col}</div>
+                ))}
+              </div>
 
-                  return (
-                    <tr
-                      key={rec.id}
-                      onClick={() => setSelectedRecord(rec)}
-                      className={`cursor-pointer transition-colors ${
-                        isSelected
-                          ? 'bg-cyan-950/50 text-cyan-200 font-semibold'
-                          : 'hover:bg-slate-800/40'
-                      }`}
-                    >
-                      <td className="py-2.5 px-2.5 text-cyan-300 font-medium">
-                        {rec.patientStudyId}
-                        {rec.isDuplicate && !viewCleanedVersion && (
-                          <span className="ml-1 text-[9px] text-red-400 uppercase">[DUP]</span>
-                        )}
-                      </td>
-                      <td className="py-2.5 px-2.5 text-slate-300">
-                        {rec.age} / {getCleanedRecordValue(rec, 'sex') as string}
-                      </td>
-                      <td className="py-2.5 px-2.5">
-                        <span className={rec.bmi && rec.bmi > 80 && !viewCleanedVersion ? 'text-red-400 underline font-bold' : ''}>
-                          {bmiDisplay ?? 'null'}
-                        </span>
-                      </td>
-                      <td className="py-2.5 px-2.5">
-                        <span className={rec.fpg && rec.fpg < 20 && !viewCleanedVersion ? 'text-amber-300 underline font-bold' : ''}>
-                          {fpgDisplay ?? 'null'}
-                        </span>
-                      </td>
-                      <td className="py-2.5 px-2.5">
-                        <span className={rec.hba1c === null && !viewCleanedVersion ? 'text-red-400 italic' : ''}>
-                          {hba1cDisplay !== null ? `${hba1cDisplay}%` : 'MISSING'}
-                        </span>
-                      </td>
-                      <td className="py-2.5 px-2.5 text-slate-400">
-                        {insulinDisplay !== null ? `${insulinDisplay}` : 'null'}
-                      </td>
-                      <td className="py-2.5 px-2.5 text-slate-400">
-                        {rec.egfr ?? 'null'}
-                      </td>
-                      <td className="py-2.5 px-2.5">
-                        {hasIssues ? (
-                          <span className={`text-[10px] px-2 py-0.5 rounded font-mono ${
-                            viewCleanedVersion ? 'bg-emerald-950/80 text-emerald-400 border border-emerald-500/30' : 'badge-flagged'
-                          }`}>
-                            {viewCleanedVersion ? 'Cleaned' : `${rec.flaggedIssues.length} Flagged`}
-                          </span>
-                        ) : (
-                          <span className="text-[10px] px-2 py-0.5 rounded badge-established font-mono">
-                            Verified
-                          </span>
-                        )}
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
+              {/* Data rows */}
+              {SYNTHETIC_PATIENT_RECORDS.map((rec) => {
+                const isSelected = selectedRecord.id === rec.id;
+                return (
+                  <div
+                    key={rec.id}
+                    onClick={() => setSelectedRecord(rec)}
+                    className={`grid grid-cols-10 gap-1 text-[10px] font-mono py-0.5 cursor-pointer rounded ${
+                      isSelected ? 'bg-cyan-50' : 'hover:bg-slate-50'
+                    }`}
+                  >
+                    <div className="text-left truncate font-medium text-slate-700 pr-1">{rec.patientStudyId.replace('SYNTH-BLJ-', '#')}</div>
+                    <div className="h-4 rounded bg-cyan-800" title="FPG Present" />
+                    <div className="h-4 rounded bg-cyan-800" title="PPG Present" />
+                    <div className={`h-4 rounded ${rec.hba1c === null ? 'bg-amber-400' : 'bg-cyan-800'}`} title={rec.hba1c === null ? 'HbA1c Missing' : 'HbA1c Present'} />
+                    <div className={`h-4 rounded ${rec.fastingInsulin === null ? 'bg-amber-400' : 'bg-cyan-800'}`} title={rec.fastingInsulin === null ? 'Insulin Missing' : 'Insulin Present'} />
+                    <div className="h-4 rounded bg-cyan-800" title="TG Present" />
+                    <div className="h-4 rounded bg-cyan-800" title="HDL Present" />
+                    <div className="h-4 rounded bg-cyan-800" title="Cr Present" />
+                    <div className="h-4 rounded bg-cyan-800" title="eGFR Present" />
+                    <div className="h-4 rounded bg-cyan-800" title="UACR Present" />
+                  </div>
+                );
+              })}
+            </div>
           </div>
         </div>
 
-        {/* Quality Audit Inspector */}
-        <div className="lg:col-span-4 sci-panel p-5">
-          <div className="flex items-center justify-between pb-3 border-b border-slate-800 mb-4">
-            <div>
-              <div className="text-[11px] font-mono text-cyan-400">Record Inspection</div>
-              <h3 className="text-sm font-bold text-white">{selectedRecord.patientStudyId}</h3>
-            </div>
-            <span className="text-xs text-slate-400 font-mono">
-              Age {selectedRecord.age} • {selectedRecord.sex}
-            </span>
+        {/* Bottom Horizontal Preprocessing Sequence */}
+        <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm mb-8">
+          <div className="text-xs font-mono uppercase tracking-wider text-slate-500 mb-3">
+            Preprocessing Workflow Pipeline (Click a stage to inspect protocol)
           </div>
 
-          {selectedRecord.flaggedIssues.length === 0 ? (
-            <div className="py-8 text-center">
-              <div className="w-10 h-10 rounded-full bg-emerald-950/60 border border-emerald-500/40 text-emerald-400 flex items-center justify-center mx-auto mb-2">
-                <CheckCircle className="w-5 h-5" />
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+            {workflowSteps.map((ws) => {
+              const isSelected = selectedWorkflowStep === ws.step;
+              return (
+                <div
+                  key={ws.step}
+                  onClick={() => setSelectedWorkflowStep(ws.step)}
+                  className={`p-3.5 rounded-lg cursor-pointer transition-all border ${
+                    isSelected
+                      ? 'bg-slate-900 text-white border-slate-900 shadow-md'
+                      : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100'
+                  }`}
+                >
+                  <div className="flex items-center justify-between text-xs font-mono mb-1">
+                    <span className={isSelected ? 'text-cyan-400 font-bold' : 'text-slate-500'}>
+                      0{ws.step}
+                    </span>
+                    <ArrowRight className="w-3.5 h-3.5 opacity-60" />
+                  </div>
+                  <h4 className="text-xs font-bold mb-1">{ws.title}</h4>
+                  <p className={`text-[11px] leading-tight ${isSelected ? 'text-slate-300' : 'text-slate-500'}`}>
+                    {ws.desc}
+                  </p>
+                </div>
+              );
+            })}
+          </div>
+
+          <div className="mt-3 p-3 bg-slate-50 rounded-lg border border-slate-200 text-xs">
+            <strong className="text-slate-900 font-mono">Stage 0{selectedWorkflowStep} Protocol Rule:</strong>{' '}
+            <span className="text-slate-600">{workflowSteps[selectedWorkflowStep - 1].protocol}</span>
+          </div>
+        </div>
+
+        {/* Table 1 Data Domains (Research Explorer Mode) */}
+        {mode === 'research' && (
+          <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm mb-8">
+            <div className="flex items-center justify-between mb-3 border-b border-slate-100 pb-2">
+              <div className="flex items-center gap-2">
+                <Database className="w-4 h-4 text-cyan-600" />
+                <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wider font-mono">
+                  Table 1: Data Domains & Quality-Control Requirements
+                </h3>
               </div>
-              <h4 className="text-xs font-semibold text-emerald-300">Clean Analytical Specimen</h4>
-              <p className="text-[11px] text-slate-400 mt-1 max-w-xs mx-auto">
-                No unit discrepancies, biologically impossible ranges, duplicates, or missing core biomarkers detected.
-              </p>
+              <span className="text-[11px] font-semibold text-slate-500">Clinical Data Protocol</span>
             </div>
-          ) : (
-            <div className="space-y-4">
-              {selectedRecord.flaggedIssues.map((issue, idx) => (
-                <div key={idx} className="bg-slate-900/80 p-3.5 rounded-lg border border-amber-500/30 space-y-2">
-                  <div className="flex items-center justify-between text-xs">
-                    <span className="font-mono text-amber-400 font-semibold uppercase flex items-center gap-1">
-                      <AlertTriangle className="w-3.5 h-3.5" /> Field: {issue.field.toUpperCase()}
-                    </span>
-                    <span className="text-[10px] uppercase font-mono px-1.5 py-0.5 rounded bg-amber-950 text-amber-300 border border-amber-500/30">
-                      {issue.issueType.replace('_', ' ')}
-                    </span>
-                  </div>
 
-                  <div>
-                    <div className="text-[11px] font-mono text-slate-400">Identified Anomaly</div>
-                    <p className="text-xs text-slate-200 mt-0.5">{issue.description}</p>
-                  </div>
-
-                  <div className="border-t border-slate-800 pt-2">
-                    <div className="text-[11px] font-mono text-emerald-400 flex items-center gap-1">
-                      <CopyCheck className="w-3 h-3" /> Proposed Pre-Processing Rule
-                    </div>
-                    <p className="text-xs text-emerald-200/90 mt-0.5">{issue.proposedCleanAction}</p>
-                  </div>
-
-                  <div className="border-t border-slate-800 pt-2">
-                    <div className="text-[11px] font-mono text-indigo-400 flex items-center gap-1">
-                      <FileCode className="w-3 h-3" /> Modeling Impact
-                    </div>
-                    <p className="text-[11px] text-slate-300 mt-0.5">{issue.impactExplanation}</p>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+              {DATA_DOMAINS_TABLE.map((dom) => (
+                <div key={dom.domain} className="p-3 rounded-lg border border-slate-200 bg-slate-50 text-xs">
+                  <div className="font-mono text-slate-900 font-bold mb-1">{dom.domain}</div>
+                  <div className="text-slate-600 text-[11px] mb-2">{dom.examples}</div>
+                  <div className="text-[11px] text-cyan-800 bg-cyan-50 p-1.5 rounded border border-cyan-100 font-mono">
+                    {dom.validationRule}
                   </div>
                 </div>
               ))}
             </div>
-          )}
-
-          {/* Current Clinical Outcome Label */}
-          <div className="mt-4 pt-3 border-t border-slate-800 text-xs">
-            <div className="text-[11px] font-mono text-slate-400">Assigned Target Label</div>
-            <div className="text-slate-200 font-medium mt-0.5 flex items-center gap-1.5">
-              <span className={`w-2 h-2 rounded-full ${
-                selectedRecord.outcomeLabel.includes('High Risk') ? 'bg-amber-400' : 'bg-emerald-400'
-              }`} />
-              <span>{selectedRecord.outcomeLabel}</span>
-            </div>
           </div>
+        )}
+
+        {/* Next Step Navigation */}
+        <div className="pt-4 border-t border-slate-200 flex items-center justify-between">
+          <button
+            type="button"
+            onClick={() => navigate('/explore')}
+            className="text-xs text-slate-500 hover:text-slate-900 font-medium"
+          >
+            ← Back to Biomarkers
+          </button>
+
+          <button
+            type="button"
+            onClick={() => navigate('/models')}
+            className="inline-flex items-center gap-2 bg-slate-900 hover:bg-slate-800 text-white font-semibold px-5 py-2.5 rounded-lg text-xs transition-all shadow-sm"
+          >
+            <span>Next: The Learning Engine</span>
+            <ArrowRight className="w-4 h-4" />
+          </button>
         </div>
+
       </div>
-
-      {/* Table 1 Data Domains Reference from Report */}
-      {mode === 'research' && (
-        <div className="mt-10 sci-panel p-5">
-          <div className="flex items-center justify-between mb-3 border-b border-slate-800 pb-2">
-            <div className="flex items-center gap-2">
-              <Database className="w-4 h-4 text-cyan-400" />
-              <h3 className="text-sm font-semibold text-white">Table 1: Data Domains & Quality-Control Requirements</h3>
-            </div>
-            <span className="text-[11px] font-mono text-slate-400">Project Report Reference</span>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-            {DATA_DOMAINS_TABLE.map((dom) => (
-              <div key={dom.domain} className="sci-card p-3 text-xs">
-                <div className="font-mono text-cyan-400 font-semibold mb-1 flex items-center justify-between">
-                  <span>{dom.domain}</span>
-                  <ShieldCheck className="w-3.5 h-3.5 text-slate-500" />
-                </div>
-                <div className="text-slate-300 mb-2 font-medium">Examples: {dom.examples}</div>
-                <div className="text-[11px] text-slate-400 mb-1">
-                  <strong className="text-slate-300">Requirement:</strong> {dom.requirement}
-                </div>
-                <div className="text-[11px] text-indigo-300 bg-indigo-950/30 p-1.5 rounded border border-indigo-500/20 font-mono">
-                  Rule: {dom.validationRule}
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
     </div>
   );
 };

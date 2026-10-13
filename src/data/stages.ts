@@ -1,12 +1,10 @@
 import type { ResearchStage } from '../types';
 
 export const RESEARCH_PROJECT_METADATA = {
-  projectTitle: 'High Precision Diabetic Biomarker Detection',
-  instituteSubmittedTo: 'BRAINS (Balaji Regional Associate Institute of Neuro Sciences)',
-  leadInvestigator: 'Dr. K. Chidambarathanu',
-  institution: 'R. M. K. Engineering College',
-  natureOfWork: 'Proposed Interdisciplinary Research Project in Diabetes, Biomarker Analysis and Artificial Intelligence',
-  statusDisclosure: 'Proposed research framework and demonstration prototype. Final clinical utility will require prospective, multi-centre validation and regulatory/ethical review.',
+  projectTitle: 'High Precision Diabetic Biomarker Detection Platform',
+  platformType: 'Interactive Biomarker Discovery & Diagnostic Model Governance Platform',
+  natureOfWork: 'Interdisciplinary Biomarker Analysis, Tabular Machine Learning, and Clinical Explainability',
+  statusDisclosure: 'Proposed research framework and demonstration platform. Final clinical utility requires prospective multi-centre validation and regulatory review.',
 };
 
 export const RESEARCH_STAGES: ResearchStage[] = [
@@ -121,5 +119,5 @@ export const WORK_PLAN_PHASES = [
   { phase: 'Phase VI', duration: 'Month 9', activities: 'Internal validation, demographic subgroup fairness analysis, and calibration assessment' },
   { phase: 'Phase VII', duration: 'Month 10', activities: 'Independent / multi-centre external validation cohort evaluation' },
   { phase: 'Phase VIII', duration: 'Month 11', activities: 'Research decision-support prototype build, clinical interpretation review' },
-  { phase: 'Phase IX', duration: 'Month 12', activities: 'Final research report submission, academic manuscript dissemination to BRAINS' },
+  { phase: 'Phase IX', duration: 'Month 12', activities: 'Final research documentation, peer review dissemination, and platform governance release' },
 ];

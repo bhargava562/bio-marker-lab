@@ -1,16 +1,17 @@
 <!doctype html>
-<html lang="en" class="dark">
+<html lang="en">
   <head>
     <meta charset="UTF-8" />
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' https: data: blob:; script-src 'self' 'unsafe-inline' 'unsafe-eval' https: blob:; style-src 'self' 'unsafe-inline' https:; font-src 'self' https: data:; img-src 'self' data: https: blob:; connect-src 'self' https: ws: wss:; worker-src 'self' blob:;" />
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='42' fill='%23080d1a' stroke='%2338bdf8' stroke-width='6'/><path d='M30 50 L45 35 L55 65 L70 50' stroke='%2300f2fe' stroke-width='6' fill='none' stroke-linecap='round' stroke-linejoin='round'/><circle cx='45' cy='35' r='4' fill='%2338bdf8'/><circle cx='55' cy='65' r='4' fill='%23818cf8'/></svg>" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>High Precision Diabetic Biomarker Detection — Research Platform</title>
     <meta name="description" content="An interactive clinical research prototype for multivariable diabetic biomarker analysis, model evaluation, and scientific interpretability." />
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
   </head>
-  <body class="bg-navy-950 text-slate-100 antialiased min-h-screen selection:bg-cyan-500/30 selection:text-cyan-200">
+  <body class="bg-slate-50 text-slate-900 antialiased min-h-screen selection:bg-cyan-500/20 selection:text-cyan-900">
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>

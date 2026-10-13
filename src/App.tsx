@@ -3,42 +3,58 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { Navbar } from './components/layout/Navbar';
 import { DisclosureBanner } from './components/ui/DisclosureBanner';
 import { Footer } from './components/layout/Footer';
-import { InvisibleStoryView } from './views/InvisibleStoryView';
+import { HelpModal } from './components/ui/HelpModal';
+import { OverviewView } from './views/OverviewView';
 import { BiomarkerUniverseView } from './views/BiomarkerUniverseView';
-import { BuildEvidenceView } from './views/BuildEvidenceView';
-import { LearningEngineView } from './views/LearningEngineView';
-import { TrustValidationView } from './views/TrustValidationView';
-import { InsidePredictionView } from './views/InsidePredictionView';
-import { ResponsibilityView } from './views/ResponsibilityView';
+import { ResearchLabView } from './views/ResearchLabView';
+import { AboutScienceView } from './views/AboutScienceView';
 import type { ExplorationMode } from './types';
 
-export function App() {
+function AppContent() {
   const [mode, setMode] = useState<ExplorationMode>('discovery');
+  const [isHelpOpen, setIsHelpOpen] = useState<boolean>(false);
 
   return (
+    <div className="min-h-screen flex flex-col bg-[#f8fafc] text-slate-800 bg-grid-light selection:bg-cyan-500/20">
+      {/* Product Header & Research Banner */}
+      <Navbar 
+        mode={mode} 
+        onToggleMode={(newMode) => setMode(newMode)} 
+        onOpenHelp={() => setIsHelpOpen(true)}
+      />
+      <DisclosureBanner mode={mode} />
+
+      {/* Product Experiences */}
+      <main className="flex-1 w-full">
+        <Routes>
+          <Route path="/" element={<OverviewView mode={mode} />} />
+          <Route path="/explore" element={<BiomarkerUniverseView mode={mode} />} />
+          <Route path="/lab" element={<ResearchLabView mode={mode} />} />
+          <Route path="/about" element={<AboutScienceView mode={mode} />} />
+          
+          {/* Backwards compatibility redirects */}
+          <Route path="/evidence" element={<Navigate to="/lab?tab=data" replace />} />
+          <Route path="/models" element={<Navigate to="/lab?tab=models" replace />} />
+          <Route path="/validation" element={<Navigate to="/lab?tab=validation" replace />} />
+          <Route path="/explainability" element={<Navigate to="/lab?tab=explainability" replace />} />
+          <Route path="/responsibility" element={<Navigate to="/about" replace />} />
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </main>
+
+      {/* Research Attribution Footer */}
+      <Footer />
+
+      {/* Global Product Help Modal */}
+      <HelpModal isOpen={isHelpOpen} onClose={() => setIsHelpOpen(false)} />
+    </div>
+  );
+}
+
+export function App() {
+  return (
     <BrowserRouter>
-      <div className="min-h-screen flex flex-col bg-[#070c18] text-slate-100 bg-grid-pattern selection:bg-cyan-500/30 selection:text-cyan-200">
-        {/* Navigation & Research Banner */}
-        <Navbar mode={mode} onToggleMode={(newMode) => setMode(newMode)} />
-        <DisclosureBanner mode={mode} />
-
-        {/* Dynamic Route Content */}
-        <main className="flex-1 w-full">
-          <Routes>
-            <Route path="/" element={<InvisibleStoryView mode={mode} />} />
-            <Route path="/explore" element={<BiomarkerUniverseView mode={mode} />} />
-            <Route path="/evidence" element={<BuildEvidenceView mode={mode} />} />
-            <Route path="/models" element={<LearningEngineView mode={mode} />} />
-            <Route path="/validation" element={<TrustValidationView mode={mode} />} />
-            <Route path="/explainability" element={<InsidePredictionView mode={mode} />} />
-            <Route path="/responsibility" element={<ResponsibilityView mode={mode} />} />
-            <Route path="*" element={<Navigate to="/" replace />} />
-          </Routes>
-        </main>
-
-        {/* Research Attribution Footer */}
-        <Footer />
-      </div>
+      <AppContent />
     </BrowserRouter>
   );
 }
